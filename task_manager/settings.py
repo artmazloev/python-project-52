@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = (
-    ["*"] if DEBUG else ["webserver", "python-project-52-7f2y.onrender.com"]
+    ["*"] if DEBUG else ["webserver", ".onrender.com"]
 )
 
 
