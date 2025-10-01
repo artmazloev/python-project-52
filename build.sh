@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-source $HOME/.local/bin/env
+set -o errexit
 
-make install && make collectstatic && make migrate
+# Установка uv если еще не установлен
+if ! command -v uv &> /dev/null; then
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    source $HOME/.local/bin/env
+fi
+
+# Установка зависимостей и настройка
+uv sync
+uv run python manage.py collectstatic --no-input
+uv run python manage.py migrate
