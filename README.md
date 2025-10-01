@@ -3,9 +3,9 @@
 ## Статус проверок и качества кода:
 [![Actions Status](https://github.com/artmazloev/python-project-52/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/artmazloev/python-project-52/actions)
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=artmazloev_python-project-52&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ваш-username_python-project-52)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=artmazloev_python-project-52&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=ваш-username_python-project-52)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=artmazloev_python-project-52&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ваш-username_python-project-52)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=artmazloev_python-project-52&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=artmazloev_python-project-52)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=artmazloev_python-project-52&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=artmazloev_python-project-52)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=artmazloev_python-project-52&metric=coverage)](https://sonarcloud.io/summary/new_code?id=artmazloev_python-project-52)
 
 🔗 [Демо на Render](https://task-manager-art-mazloev.onrender.com/)
 
@@ -54,6 +54,13 @@ uv run python manage.py collectstatic --no-input
 uv run python manage.py migrate
 ```
 ### 3. # Создайте .env по образцу
+```bash
+SECRET_KEY=your_key
+DEBUG=True
+USE_SQLITE=True
+DATABASE_URL=sqlite:///db.sqlite3
+ROLLBAR_ACCESS_TOKEN=
+```
 
 ### 4. # Запустите сервер
 ```bash

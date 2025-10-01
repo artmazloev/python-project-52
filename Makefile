@@ -4,7 +4,7 @@ install:
 	uv sync
 
 setup: install
-	cp -n .env.example .env || true
+	cp -n code-env .env || true
 	uv run python manage.py migrate
 
 PORT ?= 8000
@@ -12,7 +12,7 @@ start:
 	uv run gunicorn -w 5 -b 0.0.0.0:$(PORT) task_manager.wsgi:application
 
 start-server:
-	uv run python manage.py runserver 0.0.0.0:3000
+	/project/.venv/bin/python manage.py runserver 0.0.0.0:3000
 
 migrate:
 	uv run python manage.py makemigrations
