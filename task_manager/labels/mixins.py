@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class CheckTaskMixin:
-    error_message = _(
+    protected_error_message = _(
         "You cannot delete a label which is currently being used."
     )
 
