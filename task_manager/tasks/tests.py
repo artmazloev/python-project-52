@@ -1,42 +1,61 @@
-from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
-from django.urls import reverse
+from django.test import TestCase
+from django.urls import reverse_lazy as reverse
 
-from task_manager.statuses.models import Status
 from task_manager.tasks.models import Task
+from task_manager.test_db import TestDB
 
-User = get_user_model()
 
-
-class TasksCRUDTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.user = User.objects.create_user(
-            username="testuser", password="12345"
-        )
-        self.client.login(username="testuser", password="12345")
-
-        self.status1 = Status.objects.create(name="Status 1")
-        self.status6 = Status.objects.create(name="Status 6")
-
-        self.task = Task.objects.create(
-            name="tota", status=self.status1, author=self.user
-        )
-
-    def test_create(self):
-        url = reverse("tasks:create")
-        response = self.client.post(
-            url, {"name": "new task", "status": self.status1.id}
-        )
-        self.assertEqual(response.status_code, 302)
-
-        task = Task.objects.get(name="new task")
-        self.assertEqual(task.status, self.status1)
-
-    def test_read(self):
-        url = reverse("tasks:list")
-        response = self.client.get(url)
+class TestTask(TestDB, TestCase):
+    def test_task_page_login(self):
+        self.client.force_login(user=self.user)
+        response = self.client.get(reverse("tasks"))
         self.assertEqual(response.status_code, 200)
 
-        task = Task.objects.get(name="tota")
-        self.assertIsNotNone(task)
+    def test_task_page_logout(self):
+        response = self.client.get(reverse("tasks"))
+        self.assertRedirects(response, "/login/?next=/tasks/")
+
+    def test_create_task(self):
+        test_task_data = {
+            "name": "test_task",
+            "author": self.user.id,
+            "status": self.status.id,
+        }
+        tasks_count = Task.objects.all().count()
+        self.client.force_login(user=self.user)
+        response = self.client.post(reverse("task_create"), test_task_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("tasks"))
+        test_task = Task.objects.last()
+        self.assertEqual(test_task.name, test_task_data.get("name"))
+        self.assertEqual(Task.objects.all().count(), tasks_count + 1)
+
+    def test_read_task(self):
+        self.client.force_login(user=self.user)
+        response = self.client.get(reverse("tasks"))
+        self.assertEqual(response.status_code, 200)
+
+    def test_update_task(self):
+        update_task = {
+            "name": "new_name",
+            "author": self.user.id,
+            "status": self.status.id,
+        }
+        self.client.force_login(user=self.user)
+        response = self.client.post(
+            reverse("task_update", kwargs={"pk": self.task.id}),
+            update_task,
+        )
+        self.assertRedirects(response, reverse("tasks"))
+        task = Task.objects.get(pk=self.task.id)
+        self.assertEqual(task.name, update_task.get("name"))
+
+    def test_delete_task(self):
+        tasks_count = Task.objects.all().count()
+
+        self.client.force_login(user=self.user)
+        response = self.client.post(
+            reverse("task_delete", kwargs={"pk": self.task.id})
+        )
+        self.assertRedirects(response, reverse("tasks"))
+        self.assertEqual(Task.objects.all().count(), tasks_count - 1)

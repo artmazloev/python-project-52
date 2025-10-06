@@ -1,76 +1,75 @@
-import datetime
+from django.contrib.messages import get_messages
+from django.test import TestCase
+from django.urls import reverse_lazy as reverse
 
-from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
-from django.urls import reverse
-
-from .models import Status
-
-User = get_user_model()
+from task_manager.statuses.models import Status
+from task_manager.test_db import TestDB
 
 
-class StatusCRUDTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.user = User.objects.create_user(
-            username="testuser",
-            password="qwe123",
-        )
-        self.client.login(username="testuser", password="qwe123")
-        self.status = Status.objects.create(name="Test Status")
+class TestStatus(TestDB, TestCase):
+    def test_status_index_page(self):
+        self.client.force_login(user=self.user)
+        response = self.client.get(reverse("statuses"))
+        self.assertEqual(response.status_code, 200)
 
-    def test_create(self):
-        """Тест создания статуса"""
-        response = self.client.post(
-            reverse("statuses:create"),
-            {"name": "new1"},
-        )
-        self.assertEqual(response.status_code, 302)
-        status = Status.objects.get(name="new1")
-        self.assertIsInstance(status.created_at, datetime.datetime)
+    def test_create_status(self):
+        test_status_data = {
+            "name": "status_test",
+        }
+        status_count = Status.objects.all().count()
+        self.client.force_login(user=self.user)
+        response = self.client.post(reverse("status_create"), test_status_data)
 
-    def test_read(self):
-        """Тест показа статуса"""
-        response = self.client.get(reverse("statuses:list"))
+        self.assertRedirects(response, reverse("statuses"))
+        test_status = Status.objects.last()
+        self.assertEqual(test_status.name, test_status_data.get("name"))
+        self.assertEqual(Status.objects.all().count(), status_count + 1)
+
+    def test_read_status(self):
+        self.client.force_login(user=self.user)
+        response = self.client.get(reverse("statuses"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.status.name)
 
     def test_update_status(self):
-        """Тест обновления статуса"""
-        url = reverse("statuses:update", args=[self.status.pk])
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        self.client.force_login(user=self.user)
+        response = self.client.post(
+            reverse("status_update", kwargs={"pk": self.status.id}),
+            self.status_data,
+        )
+        self.assertRedirects(response, reverse("statuses"))
+        status = Status.objects.get(pk=self.status.id)
+        self.assertEqual(status.name, self.status_data.get("name"))
 
-        # POST запрос - отправка изменений
-        new_name = "Updated Status"
-        response = self.client.post(url, {"name": new_name})
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse("statuses:list"))
+    def test_delete_task_status(self):
+        status_count = Status.objects.all().count()
+        self.client.force_login(user=self.user)
 
-        # Проверяем обновление в БД
-        self.status.refresh_from_db()
-        self.assertEqual(self.status.name, new_name)
+        response = self.client.post(
+            reverse("status_delete", kwargs={"pk": self.status.id})
+        )
+        self.assertRedirects(response, reverse("statuses"))
+        messages = list(get_messages(response.wsgi_request))
 
-        # Проверяем сообщение об успехе
-        messages = list(response.wsgi_request._messages)
         self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), "Статус успешно изменен")
+        self.assertEqual(str(messages[0]), "Cannot delete busy status")
+
+        self.assertRedirects(response, reverse("statuses"))
+        self.assertEqual(Status.objects.all().count(), status_count)
 
     def test_delete_status(self):
-        """Тест удаления статуса"""
-        url = reverse("statuses:delete", args=[self.status.pk])
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        test_status_data = {"name": "status_test_2"}
+        test_status = Status.objects.create(**test_status_data)
+        status_count = Status.objects.all().count()
 
-        # POST запрос - выполнение удаления
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse("statuses:list"))
+        self.client.force_login(user=self.user)
+        response = self.client.post(
+            reverse("status_delete", kwargs={"pk": test_status.id})
+        )
+        self.assertRedirects(response, reverse("statuses"))
+        messages = list(get_messages(response.wsgi_request))
 
-        # Проверяем удаление из БД
-        self.assertFalse(Status.objects.filter(pk=self.status.pk).exists())
-
-        # Проверяем сообщение об успехе
-        messages = list(response.wsgi_request._messages)
         self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), "Статус успешно удален")
+        self.assertEqual(str(messages[0]), "Status was deleted successfully")
+
+        self.assertEqual(Status.objects.all().count(), status_count - 1)

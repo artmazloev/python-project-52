@@ -1,49 +1,66 @@
-from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import redirect
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy as reverse
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from .forms import LabelForm
-from .models import Label
+from task_manager.labels.forms import LabelForm
+from task_manager.labels.mixins import CheckTaskMixin
+from task_manager.labels.models import Label
 
 
-class LabelListView(LoginRequiredMixin, ListView):
+class IndexLabelView(LoginRequiredMixin, ListView):
+    template_name = "labels/index.html"
     model = Label
-    template_name = "labels/list.html"
     context_object_name = "labels"
+    extra_context = {
+        "title": _("Labels"),
+        "ID": _("ID"),
+        "name": _("Name"),
+        "edit": _("Edit"),
+        "delete": _("Delete"),
+        "created_at": _("Created at"),
+        "submit": _("Create label"),
+    }
+    permission_denied_message = _("Please login")
 
 
-class LabelCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class CreateLabelView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    form_class = LabelForm
+    template_name = "form.html"
+    success_url = reverse("labels")
+    extra_context = {
+        "title": _("Create label"),
+        "submit": _("Create"),
+    }
+    success_message = _("Label has been created successfully")
+
+
+class UpdateLabelView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Label
     form_class = LabelForm
-    template_name = "labels/create.html"
-    success_url = reverse_lazy("labels:list")
-    success_message = "Метка успешно создана"
+    template_name = "form.html"
+    success_url = reverse("labels")
+    extra_context = {
+        "title": _("Update label"),
+        "submit": _("Update"),
+    }
+    success_message = _("Label has been edited successfully")
 
 
-class LabelUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class DeleteLabelView(
+    LoginRequiredMixin, SuccessMessageMixin, CheckTaskMixin, DeleteView
+):
     model = Label
-    form_class = LabelForm
-    template_name = "labels/update.html"
-    success_url = reverse_lazy("labels:list")
-    success_message = "Метка успешно изменена"
-
-
-class LabelDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
-    model = Label
+    context_object_name = "label"
     template_name = "labels/delete.html"
-    success_url = reverse_lazy("labels:list")
-    success_message = "Метка успешно удалена"
-
-    def form_valid(self, form):
-        label = self.get_object()
-
-        if label.tasks.exists():
-            messages.error(
-                self.request,
-                ("Невозможно удалить метку, потому что она используется"),
-            )
-            return redirect("labels:list")
-        return super().form_valid(form)
+    success_url = reverse("labels")
+    extra_context = {
+        "title": _("Delete label"),
+        "submit": _("Yes, delete"),
+        "confirm": _("Are you sure delete"),
+    }
+    success_message = _("Label was successfully deleted")
+    protected_error_message = _(
+        "You cannot delete a label which is currently being used"
+    )

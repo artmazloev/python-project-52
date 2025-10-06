@@ -1,10 +1,18 @@
-from django.forms import ModelForm
+from django import forms
+from django.utils.translation import gettext_lazy as _
 
-from .models import Label
+from task_manager.labels.models import Label
 
 
-class LabelForm(ModelForm):
+class LabelForm(forms.ModelForm):
     class Meta:
         model = Label
-        fields = ["name"]
-        labels = {"name": "Имя"}
+        fields = ("name",)
+        widgets = {
+            "name": forms.TextInput(
+                attrs={
+                    "placeholder": _("name"),
+                }
+            )
+        }
+        labels = {"name": _("Name")}

@@ -1,67 +1,100 @@
-from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import redirect
-from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, DetailView, UpdateView
+from django.urls import reverse_lazy as reverse
+from django.utils.translation import gettext_lazy as _
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+)
 from django_filters.views import FilterView
 
-from .filters import TaskFilter
-from .forms import TaskForm
-from .models import Task
+from task_manager.tasks.filter import TaskFilter
+from task_manager.tasks.forms import TaskForm
+from task_manager.tasks.mixins import AuthorRequireMixin
+from task_manager.tasks.models import Task
+from task_manager.users.models import User
 
 
-class TaskListView(LoginRequiredMixin, FilterView):
+class TaskIndexView(LoginRequiredMixin, FilterView, ListView):
     model = Task
-    context_object_name = "tasks"
-    template_name = "tasks/list.html"
     filterset_class = TaskFilter
-    ordering = ["id"]
-
-    def get_filterset(self, filterset_class):
-        filterset = super().get_filterset(filterset_class)
-        filterset.request = self.request
-        return filterset
+    template_name = "tasks/index.html"
+    context_object_name = "tasks"
+    extra_context = {
+        "title": _("Tasks"),
+        "ID": _("ID"),
+        "name": _("Name"),
+        "status": _("Status"),
+        "author": _("Author"),
+        "executor": _("Executor"),
+        "edit": _("Edit"),
+        "delete": _("Delete"),
+        "select": _("Select"),
+        "created_at": _("Created at"),
+    }
+    permission_denied_message = _("Please login")
 
 
 class TaskCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
-    model = Task
     form_class = TaskForm
-    template_name = "tasks/create.html"
-    success_url = reverse_lazy("tasks:list")
-    success_message = "Задача успешно создана"
+    template_name = "form.html"
+    success_url = reverse("tasks")
+    extra_context = {
+        "title": _("Add Task"),
+        "submit": _("Create"),
+    }
+    success_message = _("Task created successfully")
+    permission_denied_message = _("Please login")
 
     def form_valid(self, form):
-        form.instance.author = self.request.user
+        user = self.request.user
+        form.instance.author = User.objects.get(pk=user.pk)
         return super().form_valid(form)
 
 
 class TaskUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Task
     form_class = TaskForm
-    template_name = "tasks/update.html"
-    success_url = reverse_lazy("tasks:list")
-    success_message = "Задача успешно изменена"
+    template_name = "form.html"
+    success_url = reverse("tasks")
+    extra_context = {
+        "title": _("Edit task"),
+        "submit": _("Update"),
+    }
+    success_message = _("Task updated successfully")
+    permission_denied_message = _("Please login")
 
 
 class TaskDeleteView(
-    LoginRequiredMixin, SuccessMessageMixin, UserPassesTestMixin, DeleteView
+    LoginRequiredMixin, AuthorRequireMixin, SuccessMessageMixin, DeleteView
 ):
     model = Task
     template_name = "tasks/delete.html"
-    success_url = reverse_lazy("tasks:list")
-    success_message = "Задача успешно удалена"
+    context_object_name = "task"
+    success_url = reverse("tasks")
+    extra_context = {
+        "title": _("Remove task"),
+        "submit": _("Yes, delete"),
+        "confirm": _("Are you sure delete"),
+    }
+    permission_denied_message = _("Please login")
+    success_message = _("Task was successfully deleted")
 
-    def test_func(self):
-        task = self.get_object()
-        return task.author == self.request.user
 
-    def handle_no_permission(self):
-        messages.error(self.request, "Задачу может удалить только ее автор")
-        return redirect("tasks:list")
-
-
-class TaskDetailView(DetailView):
+class TaskDetail(LoginRequiredMixin, DetailView):
     model = Task
     template_name = "tasks/detail.html"
-    context_object_name = "task"
+    extra_context = {
+        "title": _("Task view"),
+        "author": _("Author"),
+        "executor": _("Executor"),
+        "status": _("Status"),
+        "created": _("Created"),
+        "labels": _("Labels"),
+        "edit": _("Edit"),
+        "delete": _("Delete"),
+    }
+    permission_denied_message = _("Please login")

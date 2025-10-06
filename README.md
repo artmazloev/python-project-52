@@ -29,7 +29,7 @@
 ## 🛠️ Технологии
 
 - **Python 3.10+** — язык программирования
-- **Django 5.1** — веб-фреймворк
+- **Django 5.2** — веб-фреймворк
 - **PostgreSQL** — база данных
 - **Bootstrap 5** — UI-фреймворк
 - **Gunicorn** — WSGI сервер
@@ -49,13 +49,15 @@ cd python-project-52
 ```
 ### 2. # Установка зависимостей и настройка
 ```bash
-uv sync
-uv run python manage.py collectstatic --no-input
-uv run python manage.py migrate
+make setup
+
 ```
 ### 3. # Создайте .env по образцу
 ```bash
+touch .env
+
 SECRET_KEY=your_key
+ALLOWED_HOSTS=127.0.0.1,localhost
 DEBUG=True
 USE_SQLITE=True
 DATABASE_URL=sqlite:///db.sqlite3
@@ -64,8 +66,7 @@ ROLLBAR_ACCESS_TOKEN=
 
 ### 4. # Запустите сервер
 ```bash
-make setup
-make start-server
+make start
 ```
 
 ## Разработчик:
