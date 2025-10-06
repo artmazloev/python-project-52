@@ -30,7 +30,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # Для тестов генерируем временный ключ, для продакшена требуем настоящий
-if 'test' in sys.argv or 'pytest' in sys.modules:
+is_testing = 'test' in sys.argv or 'pytest' in sys.modules
+is_ci = os.getenv('CI') == 'true' or os.getenv('GITHUB_ACTIONS') == 'true'
+
+if is_testing or is_ci:
     SECRET_KEY = os.urandom(24).hex()
 else:
     SECRET_KEY = os.getenv("SECRET_KEY")
