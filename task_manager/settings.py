@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import dj_database_url
 import os
+import sys
 import rollbar
 from pathlib import Path
 from dotenv import load_dotenv
@@ -28,8 +29,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-test-key-for-development-only")
-
+# Для тестов генерируем временный ключ, для продакшена требуем настоящий
+if 'test' in sys.argv or 'pytest' in sys.modules:
+    SECRET_KEY = 'test-secret-key-' + os.urandom(24).hex()
+else:
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    if not SECRET_KEY:
+        raise ValueError("SECRET_KEY environment variable is not set. Please set it in production.")
 
 ALLOWED_HOSTS = [
     'webserver',
