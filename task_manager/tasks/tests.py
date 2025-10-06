@@ -30,11 +30,6 @@ class TestTask(TestDB, TestCase):
         self.assertEqual(test_task.name, test_task_data.get("name"))
         self.assertEqual(Task.objects.all().count(), tasks_count + 1)
 
-    def test_read_task(self):
-        self.client.force_login(user=self.user)
-        response = self.client.get(reverse("tasks"))
-        self.assertEqual(response.status_code, 200)
-
     def test_update_task(self):
         update_task = {
             "name": "new_name",

@@ -14,6 +14,7 @@ import os
 import rollbar
 from pathlib import Path
 from dotenv import load_dotenv
+from django.utils.translation import gettext_lazy as _
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -27,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-test-key-change-in-production")
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-test-key-for-development-only")
 
 
 ALLOWED_HOSTS = [
@@ -186,3 +187,7 @@ LOGGING = {
 
 # Инициализация Rollbar
 rollbar.init(**ROLLBAR)
+
+# Messages
+LOGIN_REQUIRED_MESSAGE = _("Please login")
+

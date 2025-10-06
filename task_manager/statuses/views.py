@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy as reverse
@@ -22,7 +23,7 @@ class StatusIndexView(LoginRequiredMixin, ListView):
         "created_at": _("Created at"),
         "create_status": _("Create status"),
     }
-    permission_denied_message = _("Please login")
+    permission_denied_message = settings.LOGIN_REQUIRED_MESSAGE
 
 
 class StatusCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -35,7 +36,7 @@ class StatusCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         "submit": _("Create"),
     }
     success_message = _("Status created successfully")
-    permission_denied_message = _("Please login")
+    permission_denied_message = settings.LOGIN_REQUIRED_MESSAGE
 
 
 class StatusUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
@@ -49,7 +50,7 @@ class StatusUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         "submit": _("Update"),
     }
     success_message = _("Status successfully changed")
-    permission_denied_message = _("Please login")
+    permission_denied_message = settings.LOGIN_REQUIRED_MESSAGE
 
 
 class StatusDeleteView(
@@ -65,5 +66,5 @@ class StatusDeleteView(
         "submit": _("Yes, delete"),
     }
     success_message = _("Status was deleted successfully")
-    permission_denied_message = _("Please login")
+    permission_denied_message = settings.LOGIN_REQUIRED_MESSAGE
     protected_error_message = _("Cannot delete busy status")

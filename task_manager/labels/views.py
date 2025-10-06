@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy as reverse
@@ -22,7 +23,7 @@ class IndexLabelView(LoginRequiredMixin, ListView):
         "created_at": _("Created at"),
         "submit": _("Create label"),
     }
-    permission_denied_message = _("Please login")
+    permission_denied_message = settings.LOGIN_REQUIRED_MESSAGE
 
 
 class CreateLabelView(LoginRequiredMixin, SuccessMessageMixin, CreateView):

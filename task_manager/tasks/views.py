@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy as reverse
@@ -35,7 +36,7 @@ class TaskIndexView(LoginRequiredMixin, FilterView, ListView):
         "select": _("Select"),
         "created_at": _("Created at"),
     }
-    permission_denied_message = _("Please login")
+    permission_denied_message = settings.LOGIN_REQUIRED_MESSAGE
 
 
 class TaskCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -47,7 +48,7 @@ class TaskCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         "submit": _("Create"),
     }
     success_message = _("Task created successfully")
-    permission_denied_message = _("Please login")
+    permission_denied_message = settings.LOGIN_REQUIRED_MESSAGE
 
     def form_valid(self, form):
         user = self.request.user
@@ -65,7 +66,7 @@ class TaskUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         "submit": _("Update"),
     }
     success_message = _("Task updated successfully")
-    permission_denied_message = _("Please login")
+    permission_denied_message = settings.LOGIN_REQUIRED_MESSAGE
 
 
 class TaskDeleteView(
@@ -80,7 +81,7 @@ class TaskDeleteView(
         "submit": _("Yes, delete"),
         "confirm": _("Are you sure delete"),
     }
-    permission_denied_message = _("Please login")
+    permission_denied_message = settings.LOGIN_REQUIRED_MESSAGE
     success_message = _("Task was successfully deleted")
 
 
@@ -97,4 +98,4 @@ class TaskDetail(LoginRequiredMixin, DetailView):
         "edit": _("Edit"),
         "delete": _("Delete"),
     }
-    permission_denied_message = _("Please login")
+    permission_denied_message = settings.LOGIN_REQUIRED_MESSAGE
