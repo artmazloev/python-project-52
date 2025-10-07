@@ -44,7 +44,7 @@ ALLOWED_HOSTS = [
     'webserver',
     '127.0.0.1',
     'localhost',
-    'task-manager-8d90.onrender.com',
+    'task-manager-art-mazloev.onrender.com',
 ]
 
 
