@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse_lazy as reverse
 
 from task_manager.statuses.models import Status
-from task_manager.test_db import TestDB
+from task_manager.tests.test_db import TestDB
 
 
 class TestStatus(TestDB, TestCase):

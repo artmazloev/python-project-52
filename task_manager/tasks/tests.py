@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse_lazy as reverse
 
 from task_manager.tasks.models import Task
-from task_manager.test_db import TestDB
+from task_manager.tests.test_db import TestDB
 
 
 class TestTask(TestDB, TestCase):
